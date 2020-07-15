@@ -38,6 +38,7 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
                 Log.d("Deal: ", travelDeal.getTitle());
                 travelDeal.setId(dataSnapshot.getKey());
                 deals.add(travelDeal);
+                notifyItemInserted(deals.size() - 1);
             }
 
             @Override
