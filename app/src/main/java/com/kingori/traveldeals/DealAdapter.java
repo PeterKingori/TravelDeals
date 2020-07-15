@@ -1,6 +1,8 @@
 package com.kingori.traveldeals;
 
+import android.content.Context;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -63,19 +65,22 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
     }
 
     @NonNull
-    @Override
+    @Override   // This method is called when RecyclerView needs a new ViewHolder
     public DealViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return null;
+        Context context = parent.getContext();
+        View itemView = LayoutInflater.from(context).inflate(R.layout.rv_row, parent, false);
+        return new DealViewHolder(itemView);
     }
 
-    @Override
+    @Override   // This method is called to display the data
     public void onBindViewHolder(@NonNull DealViewHolder holder, int position) {
-
+        TravelDeal deal = deals.get(position);
+        holder.bind(deal);
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return deals.size();
     }
 
     // This class is used to describe how to bind the data to a single row
