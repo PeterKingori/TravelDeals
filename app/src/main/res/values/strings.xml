@@ -9,4 +9,5 @@
 
     <string name="save_deal">Save</string>
     <string name="delete_deal">Delete Deal</string>
+    <string name="logout">Logout</string>
 </resources>

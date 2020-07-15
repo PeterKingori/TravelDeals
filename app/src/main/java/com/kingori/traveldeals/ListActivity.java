@@ -7,9 +7,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 public class ListActivity extends AppCompatActivity {
 
@@ -23,6 +28,13 @@ public class ListActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.list_activity_menu, menu);
+        MenuItem newDealMenu = menu.findItem(R.id.new_deal_menu);
+        if (FirebaseUtil.isAdmin == true) {
+            newDealMenu.setVisible(true);
+        }
+        else {
+            newDealMenu.setVisible(false);
+        }
         return true;
     }
 
@@ -33,6 +45,16 @@ public class ListActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, DealActivity.class);
                 startActivity(intent);
                 return true;
+            case R.id.logout_menu:
+                AuthUI.getInstance()
+                        .signOut(this)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            public void onComplete(@NonNull Task<Void> task) {
+                                Log.d("Logout: ", "User logged out");
+                                FirebaseUtil.attachListener();
+                            }
+                        });
+                FirebaseUtil.detachListener();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -53,5 +75,9 @@ public class ListActivity extends AppCompatActivity {
         LinearLayoutManager dealsLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         rvDeals.setLayoutManager(dealsLayoutManager);
         FirebaseUtil.attachListener();
+    }
+
+    public void showMenu() {
+        invalidateOptionsMenu();
     }
 }
