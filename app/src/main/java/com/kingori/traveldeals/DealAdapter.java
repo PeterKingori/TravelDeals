@@ -22,18 +22,21 @@ import java.util.ArrayList;
 
 public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder> {
     ArrayList<TravelDeal> deals;
+    private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
     private ChildEventListener mChildEventListener;
 
     public DealAdapter() {
-        FirebaseUtil.openFirebaseReference("traveldeals");
+        // FirebaseUtil.openFbReference("traveldeals");
+        mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
-        deals = FirebaseUtil.mDeals;
+        this.deals = FirebaseUtil.mDeals;
 
         mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String previousChildName) {
                 TravelDeal travelDeal = dataSnapshot.getValue(TravelDeal.class);
+                assert travelDeal != null;
                 Log.d("Deal: ", travelDeal.getTitle());
                 travelDeal.setId(dataSnapshot.getKey());
                 deals.add(travelDeal);

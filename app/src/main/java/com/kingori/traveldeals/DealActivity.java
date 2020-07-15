@@ -15,6 +15,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class DealActivity extends AppCompatActivity {
+    private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;  // This gets a reference to the location in the database where you will read/write data
     EditText txtTitle;
     EditText txtDescription;
@@ -26,8 +27,9 @@ public class DealActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_deal);
 
-        FirebaseUtil.openFirebaseReference("traveldeals");
+        FirebaseUtil.openFirebaseReference("traveldeals", this);
         // This is the entry point for accessing a Firebase Realtime Database
+        mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
 
         txtTitle = findViewById(R.id.txtTitle);
@@ -40,10 +42,9 @@ public class DealActivity extends AppCompatActivity {
             deal = new TravelDeal();
         }
         this.mDeal = deal;
-        txtTitle.setText(mDeal.getTitle());
-        txtDescription.setText(mDeal.getDescription());
-        txtPrice.setText(mDeal.getPrice());
-
+        txtTitle.setText(deal.getTitle());
+        txtDescription.setText(deal.getDescription());
+        txtPrice.setText(deal.getPrice());
     }
 
     @Override
@@ -63,8 +64,9 @@ public class DealActivity extends AppCompatActivity {
                 backToList();
                 return true;
             case R.id.delete_menu:
-                deleteDeal();
-                Toast.makeText(this, "Deal Deleted", Toast.LENGTH_SHORT).show();
+                if (mDeal != null) {
+                    deleteDeal();
+                }
                 backToList();
                 return true;
             default:
@@ -85,11 +87,13 @@ public class DealActivity extends AppCompatActivity {
     }
 
     private void deleteDeal() {
-        if (mDeal == null) {
+        if (mDeal.getId() == null) {
             Toast.makeText(this, "Please save the deal before deleting", Toast.LENGTH_SHORT).show();
-            return;
         }
-        mDatabaseReference.child(mDeal.getId()).removeValue();
+        else {
+            mDatabaseReference.child(mDeal.getId()).removeValue();
+            Toast.makeText(this, "Deal Deleted", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void backToList() {
