@@ -15,7 +15,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class DealActivity extends AppCompatActivity {
-    private FirebaseDatabase mFirebaseDatabase;  // This is the entry point for accessing a Firebase Realtime Database
     private DatabaseReference mDatabaseReference;  // This gets a reference to the location in the database where you will read/write data
     EditText txtTitle;
     EditText txtDescription;
@@ -28,7 +27,7 @@ public class DealActivity extends AppCompatActivity {
         setContentView(R.layout.activity_deal);
 
         FirebaseUtil.openFirebaseReference("traveldeals");
-        mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
+        // This is the entry point for accessing a Firebase Realtime Database
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
 
         txtTitle = findViewById(R.id.txtTitle);
