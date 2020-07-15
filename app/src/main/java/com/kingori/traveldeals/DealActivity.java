@@ -13,7 +13,7 @@ import android.widget.Toast;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class InsertActivity extends AppCompatActivity {
+public class DealActivity extends AppCompatActivity {
     private FirebaseDatabase mFirebaseDatabase;  // This is the entry point for accessing a Firebase Realtime Database
     private DatabaseReference mDatabaseReference;  // This gets a reference to the location in the database where you will read/write data
     EditText txtTitle;
@@ -23,11 +23,12 @@ public class InsertActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_insert);
+        setContentView(R.layout.activity_deal);
 
         FirebaseUtil.openFirebaseReference("traveldeals");
         mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
+
         txtTitle = findViewById(R.id.txtTitle);
         txtDescription = findViewById(R.id.txtDescription);
         txtPrice = findViewById(R.id.txtPrice);
@@ -49,9 +50,8 @@ public class InsertActivity extends AppCompatActivity {
                 Toast.makeText(this, "Deal saved", Toast.LENGTH_SHORT).show();
                 clean();
                 return true;
-            default:
-                return super.onOptionsItemSelected(item);
         }
+        return super.onOptionsItemSelected(item);
     }
 
     private void saveDeal() {

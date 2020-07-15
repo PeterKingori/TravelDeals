@@ -7,10 +7,9 @@ public class TravelDeal {
     private String price;
     private String imageUrl;
 
-    public TravelDeal() {};
+    public TravelDeal() {}
 
     public TravelDeal(String title, String description, String price, String imageUrl) {
-        this.setId(id);
         this.setTitle(title);
         this.setDescription(description);
         this.setPrice(price);
