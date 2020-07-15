@@ -24,8 +24,10 @@ public class InsertActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_insert);
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mDatabaseReference = mFirebaseDatabase.getReference().child("traveldeals");
+
+        FirebaseUtil.openFirebaseReference("traveldeals");
+        mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
+        mDatabaseReference = FirebaseUtil.mDatabaseReference;
         txtTitle = findViewById(R.id.txtTitle);
         txtDescription = findViewById(R.id.txtDescription);
         txtPrice = findViewById(R.id.txtPrice);
@@ -69,13 +71,3 @@ public class InsertActivity extends AppCompatActivity {
     }
 
 }
-
-// First step
-// Get a debug signing certificate. This is required in order to implement Google
-// sign-in for authentication in our app. This will be done later but it's better to set up the
-// application right from the start. Firebase will require a hash representation for the debug
-// key store, and you need to use the keytool command line tool in order to get it. The debug keystore
-// is a group of hashed characters that you can get through the "keytool" command. They identify
-// your computer so they should be kept secret. They're also called SHA1 characters.
-// You can also get the SHA1 of your signing certificate using the Gradle signingReport command:
-//    ./gradlew signingReport
