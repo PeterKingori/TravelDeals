@@ -71,6 +71,7 @@ public class FirebaseUtil {
         caller.startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
+                        .setIsSmartLockEnabled(false)
                         .setAvailableProviders(providers)
                         .build(),
                 RC_SIGN_IN);
@@ -83,7 +84,7 @@ public class FirebaseUtil {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String s) {
                 FirebaseUtil.isAdmin = true;
-                caller.showMenu();
+//                caller.showMenu();
                 Log.d("Admin: ", "You are an administrator");
             }
 
