@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,13 +15,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 public class DealActivity extends AppCompatActivity {
     private FirebaseDatabase mFirebaseDatabase;
@@ -29,6 +33,7 @@ public class DealActivity extends AppCompatActivity {
     EditText txtTitle;
     EditText txtDescription;
     EditText txtPrice;
+    ImageView imageView;
     TravelDeal mDeal;
 
     @Override
@@ -43,6 +48,7 @@ public class DealActivity extends AppCompatActivity {
         txtTitle = findViewById(R.id.txtTitle);
         txtDescription = findViewById(R.id.txtDescription);
         txtPrice = findViewById(R.id.txtPrice);
+        imageView = findViewById(R.id.image);
 
         Intent intent = getIntent();
         TravelDeal deal = (TravelDeal) intent.getSerializableExtra("Deal");
@@ -53,15 +59,16 @@ public class DealActivity extends AppCompatActivity {
         txtTitle.setText(deal.getTitle());
         txtDescription.setText(deal.getDescription());
         txtPrice.setText(deal.getPrice());
+        showImage(deal.getImageUrl());
 
         Button btnImage = findViewById(R.id.btnImage);
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent1 = new Intent(Intent.ACTION_GET_CONTENT);  // This type of intent allows a user to select a particular kind of data and return it
-                intent1.setType("image/jpeg");  // This sets the type of data to jpeg images
-                intent1.putExtra(Intent.EXTRA_LOCAL_ONLY, true);  // This specifies that we should receive only data that is on the device
-                startActivityForResult(intent1.createChooser(intent1, "Insert picture"), PICTURE_RESULT);
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);  // This type of intent allows a user to select a particular kind of data and return it
+                intent.setType("image/jpeg");  // This sets the type of data to jpeg images
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);  // This specifies that we should receive only data that is on the device
+                startActivityForResult(Intent.createChooser(intent, "Insert picture"), PICTURE_RESULT);
             }
         });
     }
@@ -107,20 +114,24 @@ public class DealActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICTURE_RESULT && resultCode == RESULT_OK) {
-            assert data != null;
             Uri imageUri = data.getData();
-            assert imageUri != null;
-            final StorageReference ref = FirebaseUtil.mStorageReference.child(imageUri.getLastPathSegment());
-            ref.putFile(imageUri).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            StorageReference ref = FirebaseUtil.mStorageReference.child(imageUri.getLastPathSegment());
+            UploadTask uploadTask = ref.putFile(imageUri);
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    String imageUrl = taskSnapshot.getStorage().getDownloadUrl().toString();
-                    mDeal.setImageUrl(imageUrl);
-                    Log.d("Image Url is: ", imageUrl);
-                    Log.d("Image Success", "Photo uploaded");
+                    Task<Uri> result = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+                    result.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String imageUrl = uri.toString();
+                            mDeal.setImageUrl(imageUrl);
+                            showImage(imageUrl);
+                            Log.d("Image url is ", imageUrl);
+                        }
+                    });
                 }
             });
-            Log.d("Image Uri is: ", String.valueOf(imageUri));
         }
     }
 
@@ -162,6 +173,17 @@ public class DealActivity extends AppCompatActivity {
         txtTitle.setEnabled(isEnabled);
         txtDescription.setEnabled(isEnabled);
         txtPrice.setEnabled(isEnabled);
+    }
+
+    private void showImage(String url) {
+        if (url != null && !url.isEmpty()) {
+            int width = Resources.getSystem().getDisplayMetrics().widthPixels;
+            Picasso.get()
+                    .load(url)
+                    .resize(width, (width*2/3))
+                    .centerCrop()
+                    .into(imageView);
+        }
     }
 
 }
