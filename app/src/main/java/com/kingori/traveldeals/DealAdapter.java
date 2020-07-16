@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,20 +18,22 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
 public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder> {
-    ArrayList<TravelDeal> deals;
+    ArrayList<TravelDeal> mDeals;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
     private ChildEventListener mChildEventListener;
+    private ImageView mImageDeal;
 
     public DealAdapter() {
         // FirebaseUtil.openFbReference("traveldeals");
         mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
-        this.deals = FirebaseUtil.mDeals;
+        this.mDeals = FirebaseUtil.mDeals;
 
         mChildEventListener = new ChildEventListener() {
             @Override
@@ -39,8 +42,8 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
                 assert travelDeal != null;
                 Log.d("Deal: ", travelDeal.getTitle());
                 travelDeal.setId(dataSnapshot.getKey());
-                deals.add(travelDeal);
-                notifyItemInserted(deals.size() - 1);
+                mDeals.add(travelDeal);
+                notifyItemInserted(mDeals.size() - 1);
             }
 
             @Override
@@ -77,13 +80,13 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
 
     @Override   // This method is called to display the data
     public void onBindViewHolder(@NonNull DealViewHolder holder, int position) {
-        TravelDeal deal = deals.get(position);
+        TravelDeal deal = mDeals.get(position);
         holder.bind(deal);
     }
 
     @Override
     public int getItemCount() {
-        return deals.size();
+        return mDeals.size();
     }
 
     // This class is used to describe how to bind the data to a single row
@@ -97,6 +100,7 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvDescription = itemView.findViewById(R.id.tvDescription);
             tvPrice = itemView.findViewById(R.id.tvPrice);
+            mImageDeal = itemView.findViewById(R.id.imageDeal);
             itemView.setOnClickListener(this);
         }
 
@@ -104,16 +108,27 @@ public class DealAdapter extends RecyclerView.Adapter<DealAdapter.DealViewHolder
             tvTitle.setText(deal.getTitle());
             tvDescription.setText(deal.getDescription());
             tvPrice.setText(deal.getPrice());
+            showImage(deal.getImageUrl());
         }
 
         @Override
         public void onClick(View view) {
             int position = getAdapterPosition();
             Log.d("Click on position: ", String.valueOf(position));
-            TravelDeal selectedDeal = deals.get(position);
+            TravelDeal selectedDeal = mDeals.get(position);
             Intent intent = new Intent(view.getContext(), DealActivity.class);
             intent.putExtra("Deal", selectedDeal);
             view.getContext().startActivity(intent);
+        }
+
+        private void showImage(String url) {
+            if (url != null && !url.isEmpty()) {
+                Picasso.get()
+                        .load(url)
+                        .fit()
+                        .centerCrop()
+                        .into(mImageDeal);
+            }
         }
     }
 }
