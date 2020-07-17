@@ -16,8 +16,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
@@ -35,6 +37,7 @@ public class DealActivity extends AppCompatActivity {
     EditText txtPrice;
     ImageView imageView;
     TravelDeal mDeal;
+    TextView txtDescription2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +50,7 @@ public class DealActivity extends AppCompatActivity {
 
         txtTitle = findViewById(R.id.txtTitle);
         txtDescription = findViewById(R.id.txtDescription);
+        txtDescription2 = findViewById(R.id.txtDescription2);
         txtPrice = findViewById(R.id.txtPrice);
         imageView = findViewById(R.id.image);
 
@@ -57,20 +61,33 @@ public class DealActivity extends AppCompatActivity {
         }
         this.mDeal = deal;
         txtTitle.setText(deal.getTitle());
-        txtDescription.setText(deal.getDescription());
+
         txtPrice.setText(deal.getPrice());
         showImage(deal.getImageUrl());
 
         Button btnImage = findViewById(R.id.btnImage);
-        btnImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);  // This type of intent allows a user to select a particular kind of data and return it
-                intent.setType("image/jpeg");  // This sets the type of data to jpeg images
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);  // This specifies that we should receive only data that is on the device
-                startActivityForResult(Intent.createChooser(intent, "Insert picture"), PICTURE_RESULT);
-            }
-        });
+        if (FirebaseUtil.isAdmin) {
+            txtDescription2.setVisibility(View.INVISIBLE);
+            txtDescription.setVisibility(View.VISIBLE);
+            txtDescription.setText(deal.getDescription());
+
+            btnImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);  // This type of intent allows a user to select a particular kind of data and return it
+                    intent.setType("image/jpeg");  // This sets the type of data to jpeg images
+                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);  // This specifies that we should receive only data that is on the device
+                    startActivityForResult(Intent.createChooser(intent, "Insert picture"), PICTURE_RESULT);
+                }
+            });
+        }
+        else {
+            txtDescription.setVisibility(View.INVISIBLE);
+            txtDescription2.setVisibility(View.VISIBLE);
+            txtDescription2.setText(deal.getDescription());
+            btnImage.setVisibility(View.INVISIBLE);
+        }
+
     }
 
     @Override
@@ -119,15 +136,18 @@ public class DealActivity extends AppCompatActivity {
             UploadTask uploadTask = ref.putFile(imageUri);
             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
                     Task<Uri> result = taskSnapshot.getMetadata().getReference().getDownloadUrl();
                     result.addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
                             String imageUrl = uri.toString();
+                            String pictureName = taskSnapshot.getStorage().getPath();
                             mDeal.setImageUrl(imageUrl);
+                            mDeal.setImageName(pictureName);
                             showImage(imageUrl);
                             Log.d("Image url is ", imageUrl);
+                            Log.d("Image name is ", pictureName);
                         }
                     });
                 }
@@ -154,6 +174,21 @@ public class DealActivity extends AppCompatActivity {
         else {
             mDatabaseReference.child(mDeal.getId()).removeValue();
             Toast.makeText(this, "Deal Deleted", Toast.LENGTH_SHORT).show();
+        }
+
+        if (mDeal.getImageName() != null && !mDeal.getImageName().isEmpty()) {
+            StorageReference pictureRef = FirebaseUtil.mStorage.getReference().child(mDeal.getImageName());
+            pictureRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.d("Delete image ", "Image successfully deleted");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d("Delete image unsuccess", e.getMessage());
+                }
+            });
         }
     }
 
